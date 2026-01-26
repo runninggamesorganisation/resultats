@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Running Games — Classements</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* THEME / TOKENS – MOBILE FIRST */
+    :root{
+      --bg:#050508;
+      --bg-alt:#0b0b0c;
+      --card:#0f1113;
+      --muted:#9aa3ae;
+      --text:#f2f6fb;
+      --accent:#ff7a1a;
+      --accent-soft: rgba(255,122,26,0.18);
+      --accent-weak: rgba(255,122,26,0.08);
+      --glass: rgba(255,255,255,0.03);
+      --border-soft: rgba(255,255,255,0.06);
+      --shadow-soft: 0 14px 40px rgba(0,0,0,0.85);
+
+      --fs-xs: 0.9rem;
+      --fs-sm: 1.0rem;
+      --fs-base: 1.1rem;
+      --fs-lg: 1.4rem;
+      --fs-xl: 1.9rem;
+
+      --space-xs: 4px;
+      --space-s: 8px;
+      --space-m: 14px;
+      --space-l: 18px;
+      --space-xl: 24px;
+
+      --radius-s: 14px;
+      --radius-m: 18px;
+      --radius-l: 22px;
+    }
+
+    @media (min-width: 900px){
+      :root{
+        --fs-xs: 0.8rem;
+        --fs-sm: 0.95rem;
+        --fs-base: 1.05rem;
+        --fs-lg: 1.3rem;
+        --fs-xl: 1.7rem;
+
+        --space-xs: 4px;
+        --space-s: 8px;
+        --space-m: 12px;
+        --space-l: 18px;
+        --space-xl: 24px;
+
+        --radius-s: 14px;
+        --radius-m: 18px;
+        --radius-l: 22px;
+      }
+    }
+
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      padding:var(--space-s);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: #0b0b0c;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      max-width:1100px;
+      margin-left:auto;
+      margin-right:auto;
+      font-size:var(--fs-base);
+    }
+
+    /* HEADER */
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-s);
+      margin-bottom:var(--space-s);
+      padding-inline:2px;
+    }
+    .brand{
+      display:flex;
+      gap:var(--space-s);
+      align-items:center;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:20px;
+      background:radial-gradient(circle at 15% 10%, #ffe5c7 0%, #ff7a1a 40%, #b23a00 100%);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;color:#111;font-size:0.9rem;
+      box-shadow:0 10px 28px rgba(255,122,26,0.45);
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    h1{
+      font-size:var(--fs-lg);
+      margin:0;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    .sub{
+      font-size:var(--fs-xs);
+      color:var(--muted);
+      margin-top:4px;
+    }
+    .hint{
+      font-size:var(--fs-xs);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    /* BLOCK */
+    .block{
+      background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(0,0,0,0.4));
+      border-radius:var(--radius-l);
+      padding:var(--space-m);
+      margin-bottom:var(--space-s);
+      border:1px solid var(--border-soft);
+      box-shadow:var(--shadow-soft);
+      position:relative;
+      overflow:hidden;
+    }
+    .block::before{
+      content:"";
+      position:absolute;
+      inset:-60%;
+      background:radial-gradient(circle at top left, rgba(255,122,26,0.16), transparent 55%);
+      opacity:0.6;
+      pointer-events:none;
+    }
+    .block-inner{ position:relative; z-index:1; }
+    .block-title{
+      font-weight:800;
+      color:var(--accent);
+      text-transform:uppercase;
+      font-size:var(--fs-sm);
+      margin-bottom:var(--space-s);
+      letter-spacing:0.09em;
+    }
+
+    /* STATS GRID : 2 colonnes mobile, 4 colonnes desktop */
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:var(--space-s);
+    }
+    @media (min-width:900px){
+      .stats-grid{
+        grid-template-columns:repeat(4, minmax(0,1fr));
+      }
+    }
+    .stat{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.55));
+      padding:var(--space-m);
+      border-radius:var(--radius-m);
+      border:1px solid rgba(255,255,255,0.07);
+      text-align:center;
+       display: flex;
+      flex-direction: column;
+      justify-content: center; /* centre verticalement */
+      align-items: center;     /* centre horizontalement */
+    }
+    .stat .num{
+      font-size:var(--fs-xl);
+      font-weight:900;
+      color:var(--text);
+    }
+    .stat .label{
+      font-size:var(--fs-xs);
+      color:var(--muted);
+      text-transform:uppercase;
+      margin-top:6px;
+      letter-spacing:0.06em;
+    }
+
+    /* TOP 3 */
+    .tops{
+      margin-top:var(--space-m);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-s);
+    }
+    @media (min-width:900px){
+      .tops{
+        flex-direction:row;
+      }
+    }
+    .top-card {
+      flex:1 1 48%;
+      min-width:200px;
+      padding:var(--space-m);
+      border-radius:var(--radius-m);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+      cursor:pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .top-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+      border-color: var(--accent-soft);
+    }
+    .top-men {
+      background: rgba(80, 150, 255, 0.12);
+      border: 1px solid rgba(80, 150, 255, 0.25);
+    }
+    .top-women {
+      background: rgba(255, 120, 200, 0.12);
+      border: 1px solid rgba(255, 120, 200, 0.25);
+    }
+    .top-label{
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .top-entry {
+      font-size: var(--fs-sm);
+      color: var(--text);
+      line-height: 1.45;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .top-medal {
+      font-size: var(--fs-base);
+    }
+    .top-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .top-name {
+      font-weight: 700;
+    }
+    .top-extra {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+    }
+    @media (min-width: 900px){
+      .top-card {
+        padding: var(--space-l);
+      }
+      .top-entry {
+        font-size: var(--fs-base);
+      }
+      .top-medal {
+        font-size: var(--fs-lg);
+      }
+    }
+
+    /* SEARCH ROW pour filtre classement */
+    .search-row{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-s);
+      margin-bottom: var(--space-s);
+    }
+    @media (min-width:900px){
+      .search-row{
+        flex-direction:row;
+        align-items:center;
+      }
+    }
+    .search-input{
+      background:var(--glass);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:24px;
+      font-size:var(--fs-base);
+      flex:1 1 auto;
+      min-width:0;
+      box-sizing:border-box;
+      width:100%;
+    }
+    .search-input::placeholder{
+      color:rgba(154,163,174,0.9);
+      font-size:var(--fs-xs);
+    }
+    .btn{
+      background:var(--accent);
+      color:#111;
+      padding:12px 20px;
+      border-radius:26px;
+      border:none;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 12px 28px rgba(255,122,26,0.45);
+      font-size:var(--fs-sm);
+      white-space:nowrap;
+      width:100%;
+    }
+    @media (min-width:900px){
+      .btn{
+        width:auto;
+        flex:0 0 auto;
+      }
+    }
+    .btn:active{
+      transform:translateY(1px) scale(0.98);
+      box-shadow:0 8px 20px rgba(255,122,26,0.3);
+    }
+
+    /* CARDS LIST (classement) */
+    .cards-list{ display:flex; flex-direction:column; gap:var(--space-s); margin-top:var(--space-s); }
+    .person-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));
+      border-radius:var(--radius-m);
+      padding:var(--space-m);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    @media (min-width:700px){
+      .person-card{
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:center;
+      }
+    }
+    /* Couleurs selon genre */
+    .card-male {
+      background: rgba(80,150,255,0.10);
+      border: 1px solid rgba(80,150,255,0.20);
+    }
+    .card-female {
+      background: rgba(255,120,200,0.10);
+      border: 1px solid rgba(255,120,200,0.20);
+    }
+    /* Effet hover/clic */
+    .person-card{
+      transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease;
+    }
+    .person-card:hover{
+      background:rgba(255,122,26,0.08);
+      border-color:var(--accent-soft);
+      cursor:pointer;
+      transform:translateY(-1px);
+    }
+    .person-card:active{ transform:translateY(1px) scale(0.98); opacity:0.97; }
+
+    .person-left{ display:flex; gap:var(--space-s); align-items:center; }
+    .badge{
+      min-width:54px;min-height:54px;border-radius:22px;background:var(--glass);
+      display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--accent);
+      font-size:var(--fs-sm);
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .person-meta{ display:flex;flex-direction:column; }
+    .person-name{ font-weight:900; color:var(--text); font-size:var(--fs-base); }
+    .person-sub{ color:var(--muted); font-size:var(--fs-xs); margin-top:4px; }
+    .person-right{ text-align:right; min-width:82px; align-self:flex-end; }
+    /* Desktop : cartes plus grandes */
+    @media (min-width: 900px){
+      .person-card{
+        padding: var(--space-l);
+      }
+      .person-name{
+        font-size: 1.15rem;
+      }
+      .person-sub{
+        font-size: 0.9rem;
+      }
+      .person-right div{
+        font-size: 1.0rem;
+      }
+    }
+
+    /* PANEL plein écran, slide du bas */
+    .panel {
+      position: fixed;
+      inset: 0; /* remplace top/left/right/bottom */
+      top: 100%;
+      width: 100%;
+      max-width: none; /* garantit qu’on ne force pas un centrage */
+      height: 100vh;
+      background: linear-gradient(180deg,#050506,#101319);
+      z-index: 1400;
+      transition: top 260ms cubic-bezier(.25,.9,.3,1);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-s) var(--space-s) var(--space-m);
+      border-radius: 0;
+    }
+
+    .panel.open{ top:0; }
+
+    .panel-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:var(--space-s);
+      margin-bottom:var(--space-s);
+      padding-bottom:var(--space-xs);
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      position:sticky;
+      top:0;
+      background:linear-gradient(180deg,#050506,#101319);
+      z-index:2;
+    }
+    .panel-title{ font-weight:900; font-size:var(--fs-lg); }
+    .panel-sub{ color:var(--muted); font-size:var(--fs-xs); margin-top:6px; }
+
+    .panel-body {
+      overflow-y: auto;
+      padding: 0 var(--space-s) var(--space-xl); 
+      /*  ↑        ↑
+          |        └── même marge à droite
+          └────────── même marge à gauche
+      */
+      -webkit-overflow-scrolling: touch;
+    }
+
+
+
+    /* gros bouton Fermer en bas */
+    .panel-footer{
+      position:sticky;
+      bottom:0;
+      padding-top:var(--space-s);
+      padding-bottom:var(--space-xs);
+      background:linear-gradient(0deg,#050506 60%, rgba(5,5,6,0));
+      display:flex;
+      justify-content:center;
+      z-index:2;
+    }
+    .btn-close-big{
+      background:var(--accent);
+      color:#111;
+      padding:14px 40px;
+      border-radius:28px;
+      border:none;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 12px 28px rgba(255,122,26,0.45);
+      font-size:var(--fs-sm);
+    }
+    .btn-close-big:active{
+      transform:translateY(1px) scale(0.97);
+      box-shadow:0 8px 20px rgba(255,122,26,0.3);
+    }
+
+    .panel-row{
+      display:grid;
+      grid-template-columns:repeat(1,minmax(0,1fr));
+      gap:var(--space-s);
+      margin-top:var(--space-s);
+    }
+    @media(min-width:700px){
+      .panel-row{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    .panel-stat{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.6));
+      padding:var(--space-m);
+      border-radius:var(--radius-m);
+      border:1px solid rgba(255,255,255,0.08);
+      text-align:center;
+    }
+    .panel-stat .big{
+      font-weight:900;
+      color:var(--accent);
+      font-size:var(--fs-xl);
+    }
+    .panel-stat .muted{ font-size:var(--fs-xs); text-transform:uppercase; letter-spacing:0.07em; }
+
+    .loop-details.hidden {
+      display: none;
+    }
+
+    /* Details */
+    .loop-details.hidden {
+      display: none;
+    }
+
+    .detail-cell {
+      background: rgba(255,255,255,0.03);
+      padding: 12px 14px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 20px;
+    }
+
+    .detail-item {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted rgba(255,255,255,0.08);
+      padding-bottom: 3px;
+    }
+
+    .detail-item span {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Hint that row is clickable */
+    .trend-detail-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0.8;
+      margin-top: -3px;
+    }
+
+    .loop-row:hover {
+      background: rgba(255,122,26,0.06);
+    }
+
+
+
+    .charts { display:flex; flex-direction:column; gap:var(--space-s); margin-top:var(--space-m); }
+    .chart-wrap{
+      background:transparent;
+      padding:var(--space-xs);
+      border-radius:var(--radius-m);
+      border:1px solid rgba(255,255,255,0.08);
+      min-height:200px;
+    }
+
+    /* LOOP CARDS — version améliorée */
+    .loop-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.25));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-m);
+      padding: var(--space-m);
+      margin-bottom: var(--space-s);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.30);
+      width: 100%;
+      box-sizing: border-box;
+      transition: transform 0.15s ease, border-color 0.2s ease;
+    }
+
+    .loop-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .loop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .loop-hour {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .loop-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      padding-right: 0 ;
+    }
+
+    .loop-left {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .loop-left .loop-main-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+    .loop-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loop-right .loop-main-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+
+    .loop-main-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      font-size: 0.95rem;
+      opacity: 0.92;
+    }
+
+    /* Bouton "voir détail" bien séparé du bloc info */
+    .loop-toggle {
+      color: var(--accent);
+      font-size: 0.90rem;
+      font-weight: 700;
+      text-align: right;
+      margin-top: 12px;
+      cursor: pointer;
+      padding-right: 0;
+    }
+
+
+    /* Tendance améliorée */
+    .tendance-badge {
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .tendance-up {
+      background: rgba(52, 211, 153, 0.18);
+      color: #34d399;
+    }
+
+    .tendance-down {
+      background: rgba(248, 113, 113, 0.18);
+      color: #f87171;
+    }
+
+
+    .loop-toggle:hover {
+      opacity: 0.7;
+    }
+
+    .loop-details {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: none;
+      animation: reveal 0.22s ease-out;
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .loop-detail-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .loop-detail-label {
+      font-size: 0.86rem;
+      opacity: 0.75;
+    }
+
+    .loop-detail-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+
+
+
+    .muted{ color:var(--muted); font-size:var(--fs-sm); }
+    .center{ text-align:center; }
+    .hidden{ display:none; }
+
+    @media(min-width:960px){
+      body{
+        padding:var(--space-m);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://lh3.googleusercontent.com/d/1dKUW3gMnTXOoLNHSEB7t30Q4r6yCmI_H" alt="Header" style="width:60%; display:block; margin:0 auto;">
+    
+  </header>
+
+  <!-- STATS -->
+  <section class="block" aria-labelledby="statsTitle">
+    <div class="block-inner">
+      <div class="block-title" id="statsTitle">Statistiques générales</div>
+      <div id="statsArea">
+        <div class="stats-grid">
+          <div class="stat"><div class="num" id="statHours">–</div><div class="label">Heures</div></div>
+          <div class="stat"><div class="num" id="statKm">–</div><div class="label">Km cumulés</div></div>
+          <div class="stat"><div class="num" id="statKmAvg">–</div><div class="label">Km moyen / participant</div></div>
+          <div class="stat"><div class="num" id="statPtsAvg">–</div><div class="label">Points moyens</div></div>
+        </div>
+
+        <div class="tops">
+          <div class="top-card top-men" id="topMenCard">
+            <div class="top-label">Top 3 Hommes</div>
+            <div class="muted">Chargement…</div>
+          </div>
+          <div class="top-card top-women" id="topWomenCard">
+            <div class="top-label">Top 3 Femmes</div>
+            <div class="muted">Chargement…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLASSEMENT GENERAL + FILTRE -->
+  <section class="block" aria-labelledby="listTitle">
+    <div class="block-inner">
+      <div class="block-title" id="listTitle">Classement général</div>
+
+      <div class="search-row">
+        <input id="filterInput" class="search-input" type="text"
+               placeholder="Rechercher (dossard, nom, prénom)">
+        <button id="resetFilter" class="btn">
+          Réinitialiser
+        </button>
+      </div>
+
+      <div id="participantsList" class="cards-list">
+        <div class="muted center">Chargement…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL plein écran pour participant detail -->
+  <aside id="panel" class="panel" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title" id="panelTitle"># — Nom Prénom</div>
+        <div class="panel-sub" id="panelSub">Résultat</div>
+      </div>
+    </div>
+
+    <div class="panel-body" id="panelBody">
+      <!-- summary stats -->
+      <div class="panel-row" id="panelSummary">
+        <!-- injected -->
+      </div>
+
+      <!-- charts -->
+      <div class="charts">
+        <div class="chart-wrap chart-box">
+          <canvas id="chartClassement" style="width:100%;height:220px"></canvas>
+        </div>
+        <div class="chart-wrap chart-box">
+          <canvas id="chartClassementGenre" style="width:100%;height:220px"></canvas>
+        </div>
+        <div class="chart-wrap chart-box">
+          <canvas id="chartPoints" style="width:100%;height:220px"></canvas>
+        </div>
+      </div>
+
+      <div id="loopsCards" class="loops-cards"></div>
+
+      <div class="panel-footer">
+        <button class="btn-close-big" onclick="closePanel()">Fermer</button>
+      </div>
+    </div>
+  </aside>
+
+<script>
+/* ========================================================================== */
+/*                           API CÔTÉ CLIENT                                  */
+/* ========================================================================== */
+// URL de ton WebApp GAS (exec)
+const API_URL = "https://script.google.com/macros/s/AKfycbwk7sLHp8TPaYjtmAhVEqkRVMqYPzn34i-OLUKss4GONcl7RKpsUPeX419M0Rlv0vrB9Q/exec";
+  
+let chart1 = null, chart2 = null, chart3 = null;
+let fullList = []; // classement complet
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadStats();
+  loadClassement();
+
+  // Filtre en live
+  document.getElementById("filterInput").addEventListener("input", applyFilter);
+  document.getElementById("resetFilter").addEventListener("click", () => {
+    document.getElementById("filterInput").value = "";
+    renderParticipants(fullList);
+  });
+
+  // ESC ferme le panel (desktop)
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closePanel();
+  });
+});
+
+function jsonp(url, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+
+    const q = new URLSearchParams({ ...params, callback: cb }).toString();
+    script.src = url + (url.includes("?") ? "&" : "?") + q;
+
+    const timeout = setTimeout(() => cleanup(new Error("Timeout JSONP")), 12000);
+
+    function cleanup(err) {
+      clearTimeout(timeout);
+      try { delete window[cb]; } catch(e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err);
+    }
+
+    window[cb] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => cleanup(new Error("Erreur réseau JSONP"));
+    document.body.appendChild(script);
+  });
+}
+
+  
+/* ========================================================================== */
+/*                               1) STATS                                     */
+/* ========================================================================== */
+
+function loadStats() {
+  jsonp(API_URL, { action: "stats" })
+    .then(res => {
+      if (!res || !res.ok) throw new Error(res && res.error ? res.error : "Erreur stats");
+      renderStats(res.data);
+    })
+    .catch(() => {
+      document.getElementById("statsArea").innerHTML =
+        "<div class='muted'>Erreur chargement stats</div>";
+    });
+}
+
+
+function renderStats(stats) {
+  if (!stats || stats.error) {
+    document.getElementById("statsArea").innerHTML =
+      "<div class='muted'>Erreur: "+(stats && stats.error ? stats.error : "")+"</div>";
+    return;
+  }
+
+  // valeurs principales
+  document.getElementById("statHours").textContent = stats.heures ?? "-";
+  document.getElementById("statKm").textContent =
+    (Number(stats.totalKms) || 0).toFixed(0);
+  document.getElementById("statKmAvg").textContent =
+    (Number(stats.avgKmsPerParticipant) || 0).toFixed(0);
+  document.getElementById("statPtsAvg").textContent =
+    (Number(stats.avgPoints) || 0).toFixed(0);
+
+  // TOP 3
+  const renderTopHtml = arr =>
+    arr && arr.length
+      ? arr.map((t, idx) => `
+          <div class="top-entry" onclick="showDossard('${t.dossard}')">
+            <span class="top-medal">${['🥇','🥈','🥉'][idx] || '🏅'}</span>
+            <div class="top-text">
+              <div class="top-name">
+                #${t.dossard} — ${escapeHtml(t.prenom||"")} ${escapeHtml(t.nom||"")}
+              </div>
+              <div class="top-extra">
+                Score ${escapeHtml(t.score||"-")} · <span style="text-decoration:underline;">Voir la fiche</span> →
+              </div>
+            </div>
+          </div>
+        `).join("")
+      : "<span class='muted'>Aucun</span>";
+
+  document.getElementById("topMenCard").innerHTML =
+    `<div class="top-label">Top 3 Hommes</div>${renderTopHtml(stats.topMen)}`;
+
+  document.getElementById("topWomenCard").innerHTML =
+    `<div class="top-label">Top 3 Femmes</div>${renderTopHtml(stats.topWomen)}`;
+}
+
+/* ========================================================================== */
+/*                          2) CLASSEMENT GENERAL                             */
+/* ========================================================================== */
+
+function loadClassement() {
+  jsonp(API_URL, { action: "classement" })
+    .then(res => {
+      if (!res || !res.ok) throw new Error(res && res.error ? res.error : "Erreur classement");
+      renderParticipantsCards(res.data);
+    })
+    .catch(() => {
+      document.getElementById("participantsList").innerHTML =
+        "<div class='muted center'>Erreur chargement classement</div>";
+    });
+}
+
+
+function renderParticipantsCards(list) {
+  fullList = Array.isArray(list) ? [...list] : [];
+  renderParticipants(fullList);
+}
+
+function renderParticipants(list) {
+  const container = document.getElementById("participantsList");
+  container.innerHTML = "";
+
+  if (!list || !list.length) {
+    container.innerHTML = "<div class='muted center'>Aucun participant</div>";
+    return;
+  }
+
+  list.forEach((p) => {
+    const card = document.createElement("div");
+
+    const genre = (p.genre || "").toLowerCase();
+    const genreClass = genre.startsWith("f") ? "card-female" : "card-male";
+
+    card.className = `person-card ${genreClass}`;
+    card.onclick = () => showDossard(p.dossard);
+
+    const nom = escapeHtml(p.nom || "");
+    const prenom = escapeHtml(p.prenom || "");
+
+    card.innerHTML = `
+      <div class="person-left">
+        <div class="badge">#${escapeHtml(p.dossard)}</div>
+        <div class="person-meta">
+          <div class="person-name">${prenom} ${nom}</div>
+          <div class="person-sub">
+            Classement ${escapeHtml(p.classement || "-")}
+            • ${escapeHtml(p.genre || "")}
+          </div>
+        </div>
+      </div>
+      <div class="person-right">
+        <div style="font-weight:900;color:var(--accent)">${escapeHtml(p.score || "-")}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">Voir fiche →</div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+/* ========================================================================== */
+/*                       3) FILTRE LOCAL SUR CLASSEMENT                       */
+/* ========================================================================== */
+
+function applyFilter(){
+  const q = document.getElementById("filterInput").value.trim().toLowerCase();
+  if(!q){
+    renderParticipants(fullList);
+    return;
+  }
+
+  const filtered = fullList.filter(p => {
+    const doss = String(p.dossard || "").toLowerCase();
+    const nom = String(p.nom || "").toLowerCase();
+    const prenom = String(p.prenom || "").toLowerCase();
+
+    // dossard : match exact si q est numérique
+    if (!isNaN(q) && q === doss) return true;
+
+    // nom/prénom : approximation
+    return (
+      nom.includes(q) ||
+      prenom.includes(q)
+    );
+  });
+
+  renderParticipants(filtered);
+}
+
+/* ========================================================================== */
+/*                       4) PANEL DETAIL D'UN COUREUR                         */
+/* ========================================================================== */
+
+function showDossard(dossard) {
+  if (!dossard) return;
+  openPanel();
+  setPanelLoading();
+
+  jsonp(API_URL, { action: "detail", dossard })
+    .then(res => {
+      if (!res || !res.ok) throw new Error(res && res.error ? res.error : "Erreur detail");
+      renderPanelData(res.data);
+    })
+    .catch(() => setPanelError());
+}
+
+
+function openPanel() {
+  const panel = document.getElementById("panel");
+  panel.classList.add("open");
+  panel.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+
+function closePanel() {
+  const panel = document.getElementById("panel");
+  panel.classList.remove("open");
+  panel.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+  clearCharts();
+}
+
+function setPanelLoading() {
+  document.getElementById("panelTitle").textContent = "Chargement…";
+  document.getElementById("panelSub").textContent = "";
+  document.getElementById("panelSummary").innerHTML =
+    "<div class='muted'>Chargement…</div>";
+  document.getElementById("loopsCards").innerHTML = "";
+  clearCharts();
+}
+
+function setPanelError() {
+  document.getElementById("panelTitle").textContent = "Erreur";
+  document.getElementById("panelSub").textContent = "";
+  document.getElementById("panelSummary").innerHTML =
+    "<div class='muted'>Impossible de charger</div>";
+  document.getElementById("loopsCards").innerHTML = "";
+  clearCharts();
+}
+
+function clearCharts() {
+  try{ if(chart1){ chart1.destroy(); } }catch(e){}
+  try{ if(chart2){ chart2.destroy(); } }catch(e){}
+  try{ if(chart3){ chart3.destroy(); } }catch(e){}
+  chart1 = chart2 = chart3 = null;
+}
+
+function renderPanelData(data) {
+  if (!data || data.error) {
+    setPanelError();
+    return;
+  }
+
+  const p = data.participant;
+  const hist = data.historique || [];
+  // km cumulés = kmCum de la dernière entrée remplie
+  let kmCumul = 0;
+  if (hist.length > 0) {
+    kmCumul = Number(hist[hist.length - 1].kmCum) || 0;
+  }
+
+  const nom = escapeHtml(p.nom || "");
+  const prenom = escapeHtml(p.prenom || "");
+
+  document.getElementById("panelTitle").textContent =
+    "#"+escapeHtml(p.dossard)+" — "+prenom+" "+nom;
+
+  const heures = Number(data.boucleCourante || 0);
+  document.getElementById("panelSub").textContent =
+    "Résultat après "+heures+" heure"+(heures>1?"s":"");
+
+  const score = escapeHtml(data.score || "-");
+  const clt = escapeHtml(data.classement || "-");
+  const cltGenre = escapeHtml(data.classementGenre || "-");
+
+document.getElementById("panelSummary").innerHTML = `
+  <!-- Ligne 1 -->
+  <div class="panel-stat">
+    <div class="muted">Classement</div>
+    <div class="big">${clt}</div>
+  </div>
+  <div class="panel-stat">
+    <div class="muted">Clt genre</div>
+    <div class="big">${cltGenre}</div>
+  </div>
+
+  <!-- Ligne 2 -->
+  <div class="panel-stat">
+    <div class="muted">Score</div>
+    <div class="big">${score}</div>
+  </div>
+  <div class="panel-stat">
+    <div class="muted">Km parcourus</div>
+    <div class="big">${Math.round(kmCumul)} km</div>
+  </div>
+`;
+
+ // REMPLACE intégralement le tableau par ce code :
+
+const container = document.getElementById("loopsCards");
+container.innerHTML = "";
+
+// Calcul tendance
+hist.forEach((h, i) => {
+  if (i === 0) {
+    h.trendValue = 0;
+    h.trendDir = "same";
+  } else {
+    const prev = Number(hist[i - 1].classement);
+    const curr = Number(h.classement);
+    const diff = prev - curr;
+
+    h.trendValue = diff;
+    h.trendDir = diff > 0 ? "up" : diff < 0 ? "down" : "same";
+  }
+});
+
+  // Construction des cartes
+  hist.forEach(h => {
+
+    let tendance = "—";
+    if (h.trendValue > 0) tendance = `↑${h.trendValue}`;
+    if (h.trendValue < 0) tendance = `↓${Math.abs(h.trendValue)}`;
+
+    const card = document.createElement("div");
+    card.className = "loop-card";
+
+    let tendanceHtml = "";
+    if (h.trendValue > 0) {
+      tendanceHtml = `<span class="tendance-badge tendance-up">↑${h.trendValue}</span>`;
+    }
+    else if (h.trendValue < 0) {
+      tendanceHtml = `<span class="tendance-badge tendance-down">↓${Math.abs(h.trendValue)}</span>`;
+    }
+
+    card.innerHTML = `
+        <div class="loop-header">
+          <div class="loop-hour">H${h.boucle}</div>
+        </div>
+
+        <div class="loop-main">
+
+          <div class="loop-left">
+            <div class="loop-main-item">🏃 ${h.km} km</div>
+            <div class="loop-main-item">🎯 ${h.scoreTotal} pts</div>
+          </div>
+
+          <div class="loop-right">
+            <div class="loop-main-item">#️⃣ ${h.classement}</div>
+            ${tendanceHtml}
+          </div>
+
+        </div>
+
+
+        <div class="loop-toggle"
+          onclick="this.nextElementSibling.style.display =
+            this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+          Voir détail ↓
+        </div>
+
+      <div class="loop-details">
+        <div class="loop-detail-line"><span class="loop-detail-label">4k</span><span class="loop-detail-value">${h.boucles4k}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">6k</span><span class="loop-detail-value">${h.boucles6k}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Points distance</span><span class="loop-detail-value">${h.pointsDistance}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Bonus distance max</span><span class="loop-detail-value">${h.bonusDistance}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Bonus 2 boucles</span><span class="loop-detail-value">${h.bonus2Boucles}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Bonus heures consécutives</span><span class="loop-detail-value">${h.bonusHeures}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Points horaire</span><span class="loop-detail-value">${h.pointsHeure}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Points cumulés</span><span class="loop-detail-value">${h.scoreTotal}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Classement genre</span><span class="loop-detail-value">${h.classementGenre}</span></div>
+        <div class="loop-detail-line"><span class="loop-detail-label">Classement général</span><span class="loop-detail-value">${h.classement}</span></div>
+      </div>
+    `;
+
+
+
+    container.appendChild(card);
+  });
+
+
+
+  drawCharts(hist);
+}
+
+/* ========================================================================== */
+/*                                   CHARTS                                   */
+/* ========================================================================== */
+
+function drawCharts(hist) {
+  clearCharts();
+  if (!hist || !hist.length) return;
+
+  const labels = hist.map(h => "H" + h.boucle);
+
+  const classementData = hist.map(h => {
+    const n = Number(h.classement);
+    return isNaN(n) ? null : n;
+  });
+
+  const classementGenreData = hist.map(h => {
+    const n = Number(h.classementGenre);
+    return isNaN(n) ? null : n;
+  });
+
+  const pointsData = hist.map(h => {
+    const n = Number(h.scoreTotal);
+    return isNaN(n) ? 0 : n;
+  });
+
+  /* ==========================================================
+     1) GRAPHIQUE CLASSEMENT (GÉNÉRAL)
+     ========================================================== */
+  chart1 = new Chart(
+    document.getElementById("chartClassement").getContext("2d"),
+    {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          data: classementData,
+          borderColor: "rgba(255,122,26,0.95)",
+          borderWidth: 2.5,
+          backgroundColor: "transparent",
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: { mode: "nearest", intersect: true },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#ccc" },
+            grid: { color: "rgba(255,255,255,0.08)" }
+          },
+          x: {
+            ticks: { color: "#ccc" },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+          title: {
+            display: true,
+            text: "Classement général",
+            color: "#fff",
+            font: { size: 14, weight: "bold" }
+          }
+        }
+      }
+    }
+  );
+
+  /* ==========================================================
+     2) GRAPHIQUE CLASSEMENT GENRE
+     ========================================================== */
+  chart2 = new Chart(
+    document.getElementById("chartClassementGenre").getContext("2d"),
+    {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          data: classementGenreData,
+          borderColor: "rgba(255,111,191,0.95)",
+          borderWidth: 2.5,
+          backgroundColor: "transparent",
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: { mode: "nearest", intersect: true },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#ccc" },
+            grid: { color: "rgba(255,255,255,0.08)" }
+          },
+          x: {
+            ticks: { color: "#ccc" },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+          title: {
+            display: true,
+            text: "Classement par genre",
+            color: "#fff",
+            font: { size: 14, weight: "bold" }
+          }
+        }
+      }
+    }
+  );
+
+  /* ==========================================================
+     3) GRAPHIQUE POINTS
+     ========================================================== */
+  chart3 = new Chart(
+    document.getElementById("chartPoints").getContext("2d"),
+    {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          data: pointsData,
+          borderColor: "rgba(230,230,230,1)",
+          borderWidth: 2.5,
+          backgroundColor: "transparent",
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: { mode: "nearest", intersect: true },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#ccc" },
+            grid: { color: "rgba(255,255,255,0.08)" }
+          },
+          x: {
+            ticks: { color: "#ccc" },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+          title: {
+            display: true,
+            text: "Points cumulés",
+            color: "#fff",
+            font: { size: 14, weight: "bold" }
+          }
+        }
+      }
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/*                                   HELPERS                                  */
+/* ========================================================================== */
+
+function escapeHtml(s){
+  if(s === null || s === undefined) return "";
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+</script>
+
+</body>
+</html>
