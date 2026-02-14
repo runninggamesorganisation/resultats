@@ -1085,7 +1085,7 @@ document.getElementById("panelSummary").innerHTML = `
   </div>
   <div class="panel-stat">
     <div class="muted">Km parcourus</div>
-    <div class="big">${Math.round(kmCumul)} km</div>
+    <div class="big">${formatKm(kmCumul)} km</div>
   </div>
 `;
 
@@ -1135,7 +1135,7 @@ hist.forEach((h, i) => {
         <div class="loop-main">
 
           <div class="loop-left">
-            <div class="loop-main-item">🏃 ${h.km} km</div>
+            <div class="loop-main-item">🏃 ${formatKm(h.km)} km</div>
             <div class="loop-main-item">🎯 ${h.scoreTotal} pts</div>
           </div>
 
@@ -1351,7 +1351,12 @@ function drawCharts(hist) {
 /* ========================================================================== */
 /*                                   HELPERS                                  */
 /* ========================================================================== */
+function formatKm(km){
+  const n = Number(km) || 0;
+  return (Math.abs(n - Math.round(n)) < 0.05) ? String(Math.round(n)) : n.toFixed(1);
+}
 
+  
 function escapeHtml(s){
   if(s === null || s === undefined) return "";
   return String(s)
